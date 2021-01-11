@@ -1,4 +1,4 @@
-module github.com/theovidal/bop_article_bot
+module github.com/BecauseOfProg/BecauseOfProg_Bot
 
 go 1.15
 

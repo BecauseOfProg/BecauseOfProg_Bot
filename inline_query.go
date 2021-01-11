@@ -17,9 +17,9 @@ func HandleInlineQuery(bot *telegram.BotAPI, update telegram.Update) error {
 
 	var results []interface{}
 	for _, publication := range result.Data {
-		url := fmt.Sprintf("https://becauseofprog.fr/publication/%s", publication.URL)
+		url := fmt.Sprintf("https://becauseofprog.fr/article/%s", publication.URL)
 		results = append(results, telegram.InlineQueryResultArticle{
-			Type: "publication",
+			Type: "article",
 			InputMessageContent: telegram.InputTextMessageContent{
 				Text:      fmt.Sprintf("[%s](%s)", publication.Title, url),
 				ParseMode: "Markdown",
