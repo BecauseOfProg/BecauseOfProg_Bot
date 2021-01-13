@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"encoding/json"
@@ -14,6 +14,8 @@ const APIUrl = "https://api.becauseofprog.fr/v1"
 type APIResult struct {
 	// The data returned by the call (in this case one or many publications)
 	Data []Publication `json:"data"`
+	// The total number of pages (each page contains up to 10 entries)
+	Pages int
 }
 
 // Publication stores metadata about a BecauseOfProg article
@@ -32,25 +34,48 @@ type Publication struct {
 	Author User `json:"author"`
 }
 
+func (p *Publication) FormatLink() (url string, link string) {
+	url = fmt.Sprintf("https://becauseofprog.fr/article/%s", p.URL)
+	link = fmt.Sprintf("[%s](%s)", p.Title, url)
+	return
+}
+
 // User represents a registered user on the BecauseOfProg
 type User struct {
 	// Full name of the user
 	Name string `json:"displayname"`
 }
 
-// SearchArticles performs a search into publications of the BecauseOfProg
-func SearchArticles(search string) (result APIResult, err error) {
-	resp, err := http.Get(fmt.Sprintf("%s/blog-posts?search=%s", APIUrl, search))
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+// GetPublicationsByCategory searches for publications that are contained in a specific category
+func GetPublicationsByCategory(category string, page int) (result APIResult, err error) {
+	body, err := MakeRequest(fmt.Sprintf("blog-posts?category=%s&page=%d", category, page))
 	if err != nil {
 		return
 	}
 
 	err = json.Unmarshal(body, &result)
+	return
+}
+
+// GetPublicationsBySearch performs a search into publications of the BecauseOfProg
+func GetPublicationsBySearch(search string) (result APIResult, err error) {
+	body, err := MakeRequest("blog-posts?search=" + search)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(body, &result)
+	return
+}
+
+func MakeRequest(url string) (body []byte, err error) {
+	var resp *http.Response
+	resp, err = http.Get(APIUrl + "/" + url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err = ioutil.ReadAll(resp.Body)
 	return
 }
