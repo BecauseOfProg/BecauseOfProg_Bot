@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	telegram "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
+
+	"github.com/BecauseOfProg/BecauseOfProg_Bot/lib"
 )
 
 func main() {
@@ -19,7 +22,7 @@ func main() {
 
 	bot, err := telegram.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err != nil {
-		log.Println(red.Sprintf("‼ Error creating Telegram bot: %s", err))
+		log.Println(lib.Red.Sprintf("‼ Error creating Telegram bot: %s", err))
 		return
 	}
 
@@ -27,7 +30,7 @@ func main() {
 		bot.Debug = true
 	}
 
-	log.Println(green.Sprintf("✅ Authorized on account %s", bot.Self.UserName))
+	log.Println(lib.Green.Sprintf("✅ Authorized on account %s", bot.Self.UserName))
 
 	u := telegram.NewUpdate(0)
 	u.Timeout = 60
@@ -35,11 +38,19 @@ func main() {
 	updates, _ := bot.GetUpdatesChan(u)
 
 	for update := range updates {
+		var err error
 		if update.InlineQuery != nil {
-			err := HandleInlineQuery(bot, update)
-			if err != nil {
-				log.Println(err)
+			err = HandleInlineQuery(bot, update)
+		} else if update.CallbackQuery != nil {
+			if strings.HasPrefix(update.CallbackQuery.Data, "/") {
+				err = HandleCommand(bot, update, true)
 			}
+		} else if update.Message.IsCommand() {
+			err = HandleCommand(bot, update, false)
+		}
+
+		if err != nil {
+			log.Println(lib.Red.Sprintf("‼ Error handling an event: %s", err))
 		}
 	}
 }

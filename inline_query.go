@@ -6,23 +6,24 @@ import (
 	"strconv"
 
 	telegram "github.com/go-telegram-bot-api/telegram-bot-api"
+
+	"github.com/BecauseOfProg/BecauseOfProg_Bot/lib"
 )
 
 // HandleInlineQuery handles an inline query from a user (here: suggest publications to send into the channel)
 func HandleInlineQuery(bot *telegram.BotAPI, update telegram.Update) error {
-	result, err := SearchArticles(update.InlineQuery.Query)
+	result, err := lib.GetPublicationsBySearch(update.InlineQuery.Query)
 	if err != nil {
-		return errors.New(red.Sprintf("‼ Error calling the BecauseOfProg API: %s", err))
+		return errors.New(lib.Red.Sprintf("‼ Error calling the BecauseOfProg API: %s", err))
 	}
 
 	var results []interface{}
 	for _, publication := range result.Data {
-		url := fmt.Sprintf("https://becauseofprog.fr/article/%s", publication.URL)
+		url, link := publication.FormatLink()
 		results = append(results, telegram.InlineQueryResultArticle{
 			Type: "article",
 			InputMessageContent: telegram.InputTextMessageContent{
-				Text:      fmt.Sprintf("[%s](%s)", publication.Title, url),
-				ParseMode: "Markdown",
+				Text: link,
 			},
 			ID:          strconv.Itoa(publication.Timestamp),
 			Title:       publication.Title,
@@ -37,7 +38,7 @@ func HandleInlineQuery(bot *telegram.BotAPI, update telegram.Update) error {
 		Results:       results,
 	})
 	if err != nil {
-		err = errors.New(red.Sprintf("‼ Error sending inline query result: %s", err))
+		err = errors.New(lib.Red.Sprintf("‼ Error sending inline query result: %s", err))
 	}
 
 	return err
