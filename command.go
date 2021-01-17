@@ -1,8 +1,9 @@
 package main
 
 import (
-	telegram "github.com/go-telegram-bot-api/telegram-bot-api"
 	"strings"
+
+	telegram "github.com/go-telegram-bot-api/telegram-bot-api"
 
 	"github.com/BecauseOfProg/BecauseOfProg_Bot/commands"
 )

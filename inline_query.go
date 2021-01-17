@@ -23,7 +23,8 @@ func HandleInlineQuery(bot *telegram.BotAPI, update telegram.Update) error {
 		results = append(results, telegram.InlineQueryResultArticle{
 			Type: "article",
 			InputMessageContent: telegram.InputTextMessageContent{
-				Text: link,
+				Text:      link,
+				ParseMode: "Markdown",
 			},
 			ID:          strconv.Itoa(publication.Timestamp),
 			Title:       publication.Title,
